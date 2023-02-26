@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Breakout Game</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script>
+      // Set the canvas dimensions
+      const canvas = document.getElementById("canvas");
+      canvas.width = 640;
+      canvas.height = 480;
+
+      // Get the canvas context
+      const ctx = canvas.getContext("2d");
+
+      // Set the colors
+      const black = "#000";
+      const white = "#fff";
+      const red = "#f00";
+      const green = "#0f0";
+      const blue = "#00f";
+
+      // Set the variables
+      let ballPosX = 320;
+      let ballPosY = 240;
+      let ballSpeedX = 5;
+      let ballSpeedY = 5;
+      const ballRadius = 10;
+      let paddlePosX = 260;
+      const paddlePosY = 450;
+      const paddleWidth = 120;
+      const paddleHeight = 10;
+      const brickWidth = 60;
+      const brickHeight = 20;
+      const brickGap = 5;
+      const brickColors = [red, green, blue];
+      const brickList = [];
+
+      // Create the bricks
+      for (let row = 0; row < 5; row++) {
+        for (let column = 0; column < 10; column++) {
+          const brickPosX = column * (brickWidth + brickGap) + brickGap;
+          const brickPosY = row * (brickHeight + brickGap) + brickGap + 30;
+          const brickColor = brickColors[Math.floor(Math.random() * brickColors.length)];
+          brickList.push({ x: brickPosX, y: brickPosY, color: brickColor });
+        }
+      }
+
+      // Set the game loop
+      function gameLoop() {
+        // Clear the canvas
+        ctx.fillStyle = black;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Move the ball
+        ballPosX += ballSpeedX;
+        ballPosY += ballSpeedY;
+
+        // Check for collision with the paddle
+        if (ballPosY + ballRadius >= paddlePosY && ballPosY + ballRadius <= paddlePosY + paddleHeight) {
+          if (ballPosX + ballRadius >= paddlePosX && ballPosX - ballRadius <= paddlePosX + paddleWidth) {
+            ballSpeedY = -ballSpeedY;
+          }
+        }
+
+        // Check for collision with the bricks
+        for (let i = 0; i < brickList.length; i++) {
+          const brick = brickList[i];
+          if (ballPosY - ballRadius <= brick.y + brickHeight && ballPosY + ballRadius >= brick.y) {
+            if (ballPosX + ballRadius >= brick.x && ballPosX - ballRadius <= brick.x + brickWidth) {
+              brickList.splice(i, 1);
+              ballSpeedY = -ballSpeedY;
+            }
+          }
+        }
+
+        // Check for collision with the walls
+        if (ballPosX + ballRadius >= canvas.width || ballPosX - ballRadius <= 0) {
+          ballSpeedX = -ballSpeedX;
+        }
+
+        if (ballPosY - ballRadius <= 0) {
+          ballSpeedY = -ballSpeedY;
+        }
+
+        // Draw the ball
+	ctx.beginPath();
+ctx.arc(ballPosX, ballPosY, ballRadius, 0, Math.PI * 2);
+ctx.fillStyle = "white";
+ctx.fill();
+ctx.closePath();
+    // Draw the paddle
+    ctx.fillStyle = white;
+    ctx.fillRect(paddlePosX, paddlePosY, paddleWidth, paddleHeight);
+
+    // Draw the bricks
+    for (let i = 0; i < brickList.length; i++) {
+      const brick = brickList[i];
+      ctx.fillStyle = brick.color;
+      ctx.fillRect(brick.x, brick.y, brickWidth, brickHeight);
+    }
+
+    // Move the paddle
+    function onMouseMove(event) {
+      const rect = canvas.getBoundingClientRect();
+      paddlePosX = event.clientX - rect.left - paddleWidth / 2;
+      if (paddlePosX < 0) {
+        paddlePosX = 0;
+      }
+      if (paddlePosX + paddleWidth > canvas.width) {
+        paddlePosX = canvas.width - paddleWidth;
+      }
+    }
+
+    // Add the mousemove event listener
+    canvas.addEventListener("mousemove", onMouseMove);
+
+    // Request the next animation frame
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Start the game loop
+  gameLoop();
+</script>
+</body>
+</html>
